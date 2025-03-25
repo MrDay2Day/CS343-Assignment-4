@@ -5,7 +5,6 @@ import classes.BasePlusCommissionEmployee;
 import classes.ComissionEmployee;
 import classes.HourlyEmployee;
 import classes.SalariedEmployee;
-import classes.helpers.CharacterLimiter;
 import classes.helpers.NumberFilter;
 import classes.helpers.PersistentData;
 import enums.StaffType;
@@ -14,37 +13,30 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.Objects;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 
-public class StaffManagement extends JFrame {
+public class PayrollManagement extends JFrame {
     private JTable employeeTable;
     private DefaultTableModel tableModel;
     private JTextField firstNameField, lastNameField, ssnField, grossSalesField, commissionRateField,
             wageField, hoursField, weeklySalaryField, baseSalaryField, paymentField;
-    private JLabel title, grossFieldLabel, paymentLabel, commissionRateLabel, wageLabel, hoursLabel, weeklyLabel, baseSalaryLabel, commissionCount, baseCommissionCount, hourlyCount, salaryCount;
-    private JButton addButton, clearTableButton, removeButton, printButton, clearButton;
+    private JLabel grossFieldLabel, paymentLabel, commissionRateLabel, wageLabel, hoursLabel, weeklyLabel, baseSalaryLabel;
+    private JButton addButton, clearTableButton, removeButton, printButton, clearButton, saveButton;
     private JComboBox<StaffType> employeeTypeComboBox;
     private int selectedRowIndex = -1;
     private StaffType selectedType;
     private PersistentData persistentData;
 
-    public StaffManagement(PersistentData _persistentData) {
-        try {
-            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        persistentData = _persistentData;
+    public PayrollManagement() {
+        persistentData = new PersistentData();
 
         setVisible(false);
-        setTitle("Employee Management");
+        setTitle("Employee and Invoice Management");
         Dimension frameSize = new Dimension(950, 400);
         setSize(frameSize);
         setMinimumSize(frameSize);
@@ -55,7 +47,6 @@ public class StaffManagement extends JFrame {
             public void windowClosing(WindowEvent e) {
                 setVisible(false);
                 tableModel.setRowCount(0);
-                persistentData.initialize();
                 clearInputFields();
             }
 
@@ -83,7 +74,7 @@ public class StaffManagement extends JFrame {
         JScrollPane tableScrollPane = new JScrollPane(employeeTable);
         add(tableScrollPane, BorderLayout.WEST);
 
-
+        // Add selection listener to load row details
         employeeTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 selectedRowIndex = employeeTable.getSelectedRow();
@@ -91,26 +82,25 @@ public class StaffManagement extends JFrame {
                 if (selectedRowIndex != -1) {
                     loadSelectedRowDetails();
                     removeButton.setEnabled(true);
+                    saveButton.setEnabled(true);
                 }
             }
         });
+
 
         JPanel inputPanel = new JPanel(new GridLayout(11, 2));
 
         JLabel firstNameLabel = new JLabel("First Name:");
         inputPanel.add(firstNameLabel);
         firstNameField = new JTextField(30);
-        ((AbstractDocument) firstNameField.getDocument()).setDocumentFilter(new CharacterLimiter(30));
         inputPanel.add(firstNameField);
 
         inputPanel.add(new JLabel("Last Name:"));
         lastNameField = new JTextField(30);
-        ((AbstractDocument) lastNameField.getDocument()).setDocumentFilter(new CharacterLimiter(30));
         inputPanel.add(lastNameField);
 
-        inputPanel.add(new JLabel("SSN (15 Characters):"));
-        ssnField = new JTextField(15);
-        ((AbstractDocument) ssnField.getDocument()).setDocumentFilter(new NumberFilter(15));
+        inputPanel.add(new JLabel("SSN:"));
+        ssnField = new JTextField();
         inputPanel.add(ssnField);
 
         inputPanel.add(new JLabel("Employee Type:"));
@@ -162,31 +152,12 @@ public class StaffManagement extends JFrame {
 
         inputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         inputPanel.setBackground(Color.white);
+
+
+
         add(inputPanel, BorderLayout.CENTER);
 
-        paymentLabel = new JLabel("Total Payment Due:");
-
-        title = new JLabel("Employee Count: 0");
-        commissionCount = new JLabel("Commission Employee: 0");
-        baseCommissionCount = new JLabel("Base Commission Employee: 0");
-        hourlyCount = new JLabel("Hourly Employee: 0");
-        salaryCount = new JLabel("Salary Employee: 0");
-        JPanel titlePanel_1 = new JPanel(new GridLayout(1, 1));
-        JPanel titlePanel_2 = new JPanel(new GridLayout(1, 4));
-        JPanel titlePanel_3 = new JPanel(new GridLayout(2, 1));
-        titlePanel_1.add(title);
-        titlePanel_2.add(commissionCount);
-        titlePanel_2.add(baseCommissionCount);
-        titlePanel_2.add(hourlyCount);
-        titlePanel_2.add(salaryCount);
-        titlePanel_3.add(titlePanel_1);
-        titlePanel_3.add(titlePanel_2);
-        titlePanel_3.setBorder(new EmptyBorder(10, 10, 10, 10));
-        titlePanel_1.setBackground(Color.white);
-        titlePanel_2.setBackground(Color.white);
-        titlePanel_3.setBackground(Color.white);
-        add(titlePanel_3, BorderLayout.NORTH);
-
+        // Add ActionListener to ComboBox
         employeeTypeComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -210,30 +181,15 @@ public class StaffManagement extends JFrame {
 
         JPanel buttonPanel = new JPanel();
         addButton = new JButton("Add Employee");
-        addButton.setMinimumSize(new Dimension(120, 30));
         removeButton = new JButton("Remove Employee");
-        removeButton.setMinimumSize(new Dimension(120, 30));
         printButton = new JButton("Print Stubs");
-        printButton.setMinimumSize(new Dimension(120, 30));
         clearButton = new JButton("Clear Fields");
-        clearButton.setMinimumSize(new Dimension(120, 30));
         clearTableButton = new JButton("Clear Table");
-        clearTableButton.setMinimumSize(new Dimension(120, 30));
+        saveButton = new JButton("Save Changes");
 
         removeButton.setEnabled(false);
         printButton.setEnabled(false);
-
-        printButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (selectedRowIndex != -1) {
-                    String ssn = tableModel.getValueAt(selectedRowIndex, 2).toString();
-                    boolean success = persistentData.printBySSN(ssn);
-                    String message = success ? "Successfully Printed PayStub" : "Error Printing PayStub";
-                    popUp(message);
-                }
-            }
-        });
+        saveButton.setEnabled(false);
 
         addButton.addActionListener(new ActionListener() {
             @Override
@@ -255,6 +211,7 @@ public class StaffManagement extends JFrame {
                 clearInputFields();
                 selectedRowIndex = -1;
                 removeButton.setEnabled(false);
+                saveButton.setEnabled(false);
             }
         });
 
@@ -262,13 +219,18 @@ public class StaffManagement extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 tableModel.setRowCount(0);
-                persistentData.initialize();
-                clearInputFields();
             }
         } );
 
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveChangesToSelectedRow();
+            }
+        });
 
         buttonPanel.add(addButton);
+        buttonPanel.add(saveButton);
         buttonPanel.add(removeButton);
         buttonPanel.add(clearButton);
         buttonPanel.add(clearTableButton);
@@ -284,49 +246,21 @@ public class StaffManagement extends JFrame {
             firstNameField.setText(tableModel.getValueAt(selectedRowIndex, 0).toString());
             lastNameField.setText(tableModel.getValueAt(selectedRowIndex, 1).toString());
             ssnField.setText(tableModel.getValueAt(selectedRowIndex, 2).toString());
-            String staffTypeValue = tableModel.getValueAt(selectedRowIndex, 3).toString().trim();
-            for (int i = 0; i < employeeTypeComboBox.getItemCount(); i++) {
-                StaffType type = employeeTypeComboBox.getItemAt(i);
-                System.out.println(staffTypeValue);
-                System.out.println(type);
+            employeeTypeComboBox.setSelectedItem(tableModel.getValueAt(selectedRowIndex, 3).toString());
+        }
+    }
+    private void saveChangesToSelectedRow() {
 
-                if (Objects.equals(String.valueOf(type), staffTypeValue)) {
-                    employeeTypeComboBox.setSelectedItem(type);
-                    switch (type){
-                        case HOURLY_EMPLOYEE -> {
-                            HourlyEmployee employee = persistentData.getRecordFromHourlyEmployee(
-                                    (String) tableModel.getValueAt(selectedRowIndex, 2)
-                            );
-                            wageField.setText(String.valueOf(employee.getWage()));
-                            hoursField.setText(String.valueOf(employee.getHours()));
-                        }
-                        case SALARIED_EMPLOYEE -> {
-                            SalariedEmployee employee = persistentData.getRecordFromSalariedEmployee(
-                                    (String) tableModel.getValueAt(selectedRowIndex, 2)
-                            );
-                            weeklySalaryField.setText(String.valueOf(employee.getWeeklySalary()));
-                        }
-                        case COMMISSION_EMPLOYEE -> {
-                            ComissionEmployee employee = persistentData.getRecordFromCommissionEmployee(
-                                    (String) tableModel.getValueAt(selectedRowIndex, 2)
-                            );
-                            grossSalesField.setText(String.valueOf(employee.getGrossSale()));
-                            commissionRateField.setText(String.valueOf(employee.getCommissionRate()));
-                        }
-                        case BASE_PLUS_COMMISSION_EMPLOYEE -> {
-                            BasePlusCommissionEmployee employee = persistentData.getRecordFromBasePlusCommissionEmployee(
-                                    (String) tableModel.getValueAt(selectedRowIndex, 2)
-                            );
-                            grossSalesField.setText(String.valueOf(employee.getGrossSale()));
-                            commissionRateField.setText(String.valueOf(employee.getCommissionRate()));
-                            baseSalaryField.setText(String.valueOf(employee.getBaseSalary()));
-                        }
-                        default -> popUp("System Error!\nInvalid Value!");
-                    }
-                    break;
-                }
-            }
-            paymentField.setText(String.valueOf(tableModel.getValueAt(selectedRowIndex, 4)));
+        if (selectedRowIndex != -1) {
+            tableModel.setValueAt(firstNameField.getText(), selectedRowIndex, 0);
+            tableModel.setValueAt(lastNameField.getText(), selectedRowIndex, 1);
+            tableModel.setValueAt(ssnField.getText(), selectedRowIndex, 2);
+            tableModel.setValueAt(employeeTypeComboBox.getSelectedItem(), selectedRowIndex, 3);
+            clearInputFields();
+            employeeTable.clearSelection();
+            selectedRowIndex = -1;
+            removeButton.setEnabled(false);
+            saveButton.setEnabled(false);
         }
     }
     private void popUp(String message){
@@ -334,27 +268,27 @@ public class StaffManagement extends JFrame {
     }
     private void removeSelectedEmployee() {
         if (selectedRowIndex != -1) {
-            String ssn = tableModel.getValueAt(selectedRowIndex, 2).toString();
-            boolean deleted = persistentData.removeBySSN(ssn);
-
-            if(deleted){
-                popUp("Successfully deleted SSN: " + ssn);
-            }else{
-                popUp("Something went wrong for SSN: " + ssn);
-            }
-
             tableModel.removeRow(selectedRowIndex);
             clearInputFields();
             selectedRowIndex = -1;
             removeButton.setEnabled(false);
+            saveButton.setEnabled(false);
         }
     }
     private void addEmployeeToTable() {
+
         String firstName = firstNameField.getText();
         String lastName = lastNameField.getText();
         String ssn = ssnField.getText();
+        String employeeType = String.valueOf(selectedType);
+
         saveRecord(firstName, lastName, ssn, selectedType);
 
+
+
+        tableModel.addRow(new Object[]{firstName, lastName, ssn, employeeType});
+
+        clearInputFields();
     }
     private void clearInputFields() {
         firstNameField.setText("");
@@ -366,37 +300,24 @@ public class StaffManagement extends JFrame {
         hoursField.setText("");
         weeklySalaryField.setText("");
         baseSalaryField.setText("");
-        paymentField.setText("");
         employeeTypeComboBox.setSelectedIndex(0);
         selectedRowIndex = -1;
         employeeTable.clearSelection();
-        removeButton.setEnabled(false);
-
-        int commissionCountTotal = persistentData.getCommissionEmployee().size();
-        int baseCommissionCountTotal = persistentData.getBasePlusCommissionEmployee().size();
-        int hourlyCountTotal = persistentData.getHourlyEmployee().size();
-        int salaryCountTotal = persistentData.getSalariedEmployee().size();
-
-        int titleTotal = commissionCountTotal + baseCommissionCountTotal + hourlyCountTotal + salaryCountTotal;
-
-        title.setText("Employee Count: " + titleTotal);
-        commissionCount.setText("Commission Employee: " + commissionCountTotal);
-        baseCommissionCount.setText("Base Commission Employee: " + baseCommissionCountTotal);
-        hourlyCount.setText("Hourly Employee: " + hourlyCountTotal);
-        salaryCount.setText("Salary Employee: " + salaryCountTotal);
 
         updateFieldVisibility();
     }
     private void updateFieldVisibility() {
+        // Ensure selectedItem is cast safely and checked for null
         Object selectedItem = employeeTypeComboBox.getSelectedItem();
         if (selectedItem instanceof StaffType) {
             selectedType = (StaffType) selectedItem;
         } else {
-            selectedType = StaffType.SELECT_STAFF_TYPE;
+            selectedType = StaffType.SELECT_STAFF_TYPE; // Default case
         }
 
         System.out.println("Selected type: " + selectedType);
 
+        // Reset visibility
         grossFieldLabel.setEnabled(false);
         commissionRateLabel.setEnabled(false);
         wageLabel.setEnabled(false);
@@ -411,54 +332,28 @@ public class StaffManagement extends JFrame {
         weeklySalaryField.setVisible(false);
         baseSalaryField.setVisible(false);
 
-        addButton.setEnabled(selectedRowIndex <= -1);
-
-        firstNameField.setEditable(selectedRowIndex <= -1);
-        lastNameField.setEditable(selectedRowIndex <= -1);
-        ssnField.setEditable(selectedRowIndex <= -1);
-        employeeTypeComboBox.setEnabled(selectedRowIndex <= -1);
-        employeeTypeComboBox.setEnabled(selectedRowIndex <= -1);
-        printButton.setEnabled(selectedRowIndex > -1);
-
-
-
+        // Update visibility based on selection
         switch (selectedType) {
             case COMMISSION_EMPLOYEE -> {
                 grossFieldLabel.setEnabled(true);
                 commissionRateLabel.setEnabled(true);
-
-                grossSalesField.setEditable(selectedRowIndex <= -1);
-                commissionRateField.setEditable(selectedRowIndex <= -1);
-
                 grossSalesField.setVisible(true);
                 commissionRateField.setVisible(true);
             }
             case HOURLY_EMPLOYEE -> {
                 wageLabel.setEnabled(true);
                 hoursLabel.setEnabled(true);
-
-                wageField.setEditable(selectedRowIndex <= -1);
-                hoursField.setEditable(selectedRowIndex <= -1);
-
                 wageField.setVisible(true);
                 hoursField.setVisible(true);
             }
             case SALARIED_EMPLOYEE -> {
                 weeklyLabel.setEnabled(true);
-
-                weeklySalaryField.setEditable(selectedRowIndex <= -1);
-
                 weeklySalaryField.setVisible(true);
             }
             case BASE_PLUS_COMMISSION_EMPLOYEE -> {
                 grossFieldLabel.setEnabled(true);
                 commissionRateLabel.setEnabled(true);
                 baseSalaryLabel.setEnabled(true);
-
-                grossSalesField.setEditable(selectedRowIndex <= -1);
-                commissionRateField.setEditable(selectedRowIndex <= -1);
-                baseSalaryField.setEditable(selectedRowIndex <= -1);
-
                 grossSalesField.setVisible(true);
                 commissionRateField.setVisible(true);
                 baseSalaryField.setVisible(true);
@@ -473,12 +368,6 @@ public class StaffManagement extends JFrame {
             if(firstName.length() <= 0 || lastName.length() <= 0 || ssn.length() <= 0 ){
                 popUp("You must provide a valid first name, last name and SSN");
                 throw new Exception("Invalid Entry");
-            }
-
-            boolean exist = persistentData.checkSSN(ssn);
-            if(exist){
-                popUp("This SSN already exist!");
-                return;
             }
             switch (staffType){
                 case SALARIED_EMPLOYEE -> {
@@ -495,9 +384,6 @@ public class StaffManagement extends JFrame {
                     }
                     SalariedEmployee salariedEmployee = new SalariedEmployee(firstName, lastName, ssn, weekly);
                     persistentData.addSalariedEmployee(salariedEmployee);
-                    String payment = String.format("%.2f", salariedEmployee.getPaymentAmount());
-                    tableModel.addRow(new Object[]{firstName, lastName, ssn, String.valueOf(selectedType), payment});
-                    clearInputFields();
                 }
                 case COMMISSION_EMPLOYEE -> {
                     String grossSaleText = grossSalesField.getText();
@@ -512,9 +398,6 @@ public class StaffManagement extends JFrame {
                     ComissionEmployee comissionEmployee = new ComissionEmployee(firstName, lastName, ssn, grossSale,
                             commissionRate);
                     persistentData.addCommissionEmployee(comissionEmployee);
-                    String payment = String.format("%.2f", comissionEmployee.getPaymentAmount());
-                    tableModel.addRow(new Object[]{firstName, lastName, ssn, String.valueOf(selectedType), payment});
-                    clearInputFields();
                 }
                 case BASE_PLUS_COMMISSION_EMPLOYEE -> {
 
@@ -534,9 +417,6 @@ public class StaffManagement extends JFrame {
                     BasePlusCommissionEmployee basePlusCommissionEmployee = new BasePlusCommissionEmployee(firstName,
                             lastName, ssn, grossSales, commissionRate, baseSalary);
                     persistentData.addBasePlusCommissionEmployee(basePlusCommissionEmployee);
-                    String payment = String.format("%.2f", basePlusCommissionEmployee.getPaymentAmount());
-                    tableModel.addRow(new Object[]{firstName, lastName, ssn, String.valueOf(selectedType), payment});
-                    clearInputFields();
                 }
                 case HOURLY_EMPLOYEE -> {
                     String  wageText = wageField.getText();
@@ -550,9 +430,6 @@ public class StaffManagement extends JFrame {
                     double hours = Double.parseDouble(hoursText);
                     HourlyEmployee hourlyEmployee = new HourlyEmployee(firstName, lastName, ssn, wage, hours);
                     persistentData.addHourlyEmployee(hourlyEmployee);
-                    String payment = String.format("%.2f", hourlyEmployee.getPaymentAmount());
-                    tableModel.addRow(new Object[]{firstName, lastName, ssn, String.valueOf(selectedType), payment});
-                    clearInputFields();
                 }
                 default -> {
                     popUp("Please select a employee type.");
@@ -564,4 +441,8 @@ public class StaffManagement extends JFrame {
         }
 
     }
+
+
+
+
 }
