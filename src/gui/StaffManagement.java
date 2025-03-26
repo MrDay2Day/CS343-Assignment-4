@@ -22,18 +22,37 @@ import java.awt.event.*;
 import java.util.Objects;
 
 
+/**
+ * Manages the staff information and payment details.
+ * This class provides a graphical user interface for adding, removing, and viewing employee records.
+ */
 public class StaffManagement extends JFrame {
+    /** Table to display employee details. */
     private JTable employeeTable;
+    /** Model for the employee table. */
     private DefaultTableModel tableModel;
+    /** Text fields for employee information. */
     private JTextField firstNameField, lastNameField, ssnField, grossSalesField, commissionRateField,
             wageField, hoursField, weeklySalaryField, baseSalaryField, paymentField;
+    /** Labels for input fields and employee counts. */
     private JLabel title, grossFieldLabel, paymentLabel, commissionRateLabel, wageLabel, hoursLabel, weeklyLabel, baseSalaryLabel, commissionCount, baseCommissionCount, hourlyCount, salaryCount;
+    /** Buttons for adding, removing, clearing, and printing employee records. */
     private JButton addButton, clearTableButton, removeButton, printButton, clearButton;
+    /** Combo box for selecting employee type. */
     private JComboBox<StaffType> employeeTypeComboBox;
+    /** Index of the selected row in the table. */
     private int selectedRowIndex = -1;
+    /** Selected employee type. */
     private StaffType selectedType;
+    /** Data persistence object. */
     private PersistentData persistentData;
 
+    /**
+     * Constructs a new StaffManagement window.
+     * Initializes the UI components and sets up event listeners.
+     *
+     * @param _persistentData The data persistence object.
+     */
     public StaffManagement(PersistentData _persistentData) {
         try {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
@@ -279,6 +298,9 @@ public class StaffManagement extends JFrame {
 
         updateFieldVisibility();
     }
+    /**
+     * Loads the details of the selected row into the input fields.
+     */
     private void loadSelectedRowDetails() {
         if (selectedRowIndex != -1) {
             firstNameField.setText(tableModel.getValueAt(selectedRowIndex, 0).toString());
@@ -329,9 +351,17 @@ public class StaffManagement extends JFrame {
             paymentField.setText(String.valueOf(tableModel.getValueAt(selectedRowIndex, 4)));
         }
     }
+    /**
+     * Displays a pop-up message dialog.
+     *
+     * @param message The message to display.
+     */
     private void popUp(String message){
         JOptionPane.showMessageDialog(this, message);
     }
+    /**
+     * Removes the selected employee from the table and data persistence.
+     */
     private void removeSelectedEmployee() {
         if (selectedRowIndex != -1) {
             String ssn = tableModel.getValueAt(selectedRowIndex, 2).toString();
@@ -349,6 +379,9 @@ public class StaffManagement extends JFrame {
             removeButton.setEnabled(false);
         }
     }
+    /**
+     * Adds a new employee to the table and data persistence.
+     */
     private void addEmployeeToTable() {
         String firstName = firstNameField.getText();
         String lastName = lastNameField.getText();
@@ -356,6 +389,9 @@ public class StaffManagement extends JFrame {
         saveRecord(firstName, lastName, ssn, selectedType);
 
     }
+    /**
+     * Clears all input fields and resets the UI.
+     */
     private void clearInputFields() {
         firstNameField.setText("");
         lastNameField.setText("");
@@ -387,6 +423,9 @@ public class StaffManagement extends JFrame {
 
         updateFieldVisibility();
     }
+    /**
+     * Updates the visibility of input fields based on the selected employee type.
+     */
     private void updateFieldVisibility() {
         Object selectedItem = employeeTypeComboBox.getSelectedItem();
         if (selectedItem instanceof StaffType) {
@@ -468,6 +507,14 @@ public class StaffManagement extends JFrame {
         revalidate();
         repaint();
     }
+    /**
+     * Saves a new employee record to the data persistence.
+     *
+     * @param firstName The first name of the employee.
+     * @param lastName  The last name of the employee.
+     * @param ssn       The social security number of the employee.
+     * @param staffType The type of the employee.
+     */
     private void saveRecord(String firstName, String lastName, String ssn, StaffType staffType){
         try{
             if(firstName.length() <= 0 || lastName.length() <= 0 || ssn.length() <= 0 ){

@@ -1,4 +1,6 @@
+import classes.*;
 import classes.helpers.PersistentData;
+import enums.PartsListEnum;
 import gui.PayrollManagement;
 import gui.StaffManagement;
 
@@ -6,13 +8,27 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+/**
+ * Main class for the Employee and Invoice Management application.
+ * This class creates the main window with buttons to manage employees and invoices.
+ * It also includes a testing method to create and write test data to files.
+ */
 public class Main extends JFrame {
-    private JButton staffButton, invoiceButton;
+    /** Button to open the Staff Management window. */
+    private JButton staffButton;
+    /** Button to open the Invoice Management window. */
+    private JButton invoiceButton;
+    /** Instance of the Staff Management window. */
     private StaffManagement staffManagementWindow;
+    /** Instance of the Payroll Management window. */
     private PayrollManagement payrollManagement;
+    /** Instance of Persistent Data to store and retrieve data. */
     private PersistentData persistentData;
 
-
+    /**
+     * Constructor for the Main class. Initializes the main window, sets up the UI,
+     * and creates instances of the Staff and Payroll Management windows.
+     */
     public Main() {
         persistentData = new PersistentData();
         staffManagementWindow = new StaffManagement(persistentData);
@@ -95,12 +111,61 @@ public class Main extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Main method. Entry point of the application.
+     * It calls the {@link #testAll()} method to execute tests and then launches the main window.
+     *
+     * @param args Command line arguments (not used).
+     */
     public static void main(String[] args) {
+        // Executing Testing method
+        testAll();
+
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+
                 new Main();
             }
         });
+
+    }
+
+    /**
+     * Private method to test the functionality by creating instances of different employee
+     * and invoice classes and writing them to files.
+     */
+    private static void testAll(){
+        // Create Test instances of employees
+        ComissionEmployee comissionEmployee = new ComissionEmployee(
+                "FirstName1", "LastName1",
+                "100000000000001", 230000,
+                0.04);
+        BasePlusCommissionEmployee basePlusCommissionEmployee = new BasePlusCommissionEmployee(
+                "FirstName2", "LastName2",
+                "100000000000002", 230000,
+                0.04, 120000);
+        HourlyEmployee hourlyEmployee = new HourlyEmployee(
+                "FirstName3", "LastName3",
+                "100000000000003", 8200,
+                94.56);
+        SalariedEmployee salariedEmployee = new SalariedEmployee(
+                "FirstName4", "LastName4",
+                "100000000000004", 456000);
+
+        // Using Item ENUM to create test instance of invoice
+        PartsListEnum part = PartsListEnum.A1;
+        Invoice invoice = new Invoice(
+                part.getPart().getPartNumber(), part.getPart().getDescription(),
+                23, part.getPart().getPrice()
+        );
+
+        // Write to file for all instances
+        comissionEmployee.writeToFile();
+        basePlusCommissionEmployee.writeToFile();
+        hourlyEmployee.writeToFile();
+        salariedEmployee.writeToFile();
+        invoice.writeToFile();
     }
 }

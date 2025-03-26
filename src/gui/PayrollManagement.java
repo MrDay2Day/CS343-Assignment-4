@@ -1,6 +1,6 @@
 package gui;
 
-import classes.Invoice;
+import classes.*;
 import classes.helpers.NumberFilter;
 import classes.helpers.WholeNumbersFilter;
 import enums.PartsListEnum;
@@ -15,35 +15,49 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-
+/**
+ * Manages the invoice creation and printing functionality.
+ * This class provides a graphical user interface for selecting parts, entering quantities,
+ * and generating invoices.
+ */
 public class PayrollManagement extends JFrame {
 
+    /** Text field to display the part description. */
     private JTextField partDescriptionField, quantityField, pricePerItemField, paymentField;
+    /** Labels for the input fields. */
     private JLabel partNumberLabel, partDescriptionLabel, quantityLabel, pricePerItemLabel, paymentLabel;
+    /** Buttons to print the invoice and clear the input fields. */
     private JButton printButton, clearButton;
+    /** Combo box to select the part number. */
     private JComboBox<String> itemsComboBox;
+    /** Invoice object to store the invoice details. */
     private Invoice invoice;
+
+    /**
+     * Constructs a new PayrollManagement window.
+     * Initializes the UI components and sets up event listeners.
+     */
     public PayrollManagement() {
-        setVisible(false);
+        setVisible(false); // Initially hidden
         setTitle("Invoice Management");
         Dimension frameSize = new Dimension(270, 300);
         setSize(frameSize);
         setMinimumSize(frameSize);
         setBackground(Color.white);
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Prevents default close behavior
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                setVisible(false);
-                clearInputFields();
-                itemsComboBox.setSelectedIndex(0);
+                setVisible(false); // Hide the window instead of closing
+                clearInputFields(); // Clear all input fields
+                itemsComboBox.setSelectedIndex(0); // Reset the combo box
             }
-
         });
         setLayout(new BorderLayout());
-        setLocationRelativeTo(null);
-        setResizable(false);
+        setLocationRelativeTo(null); // Center the window on the screen
+        setResizable(false); // Prevent window resizing
 
+        // Input panel setup
         JPanel inputPanel = new JPanel(new GridLayout(7, 2));
 
         partNumberLabel = new JLabel("Part Number:");
@@ -60,20 +74,19 @@ public class PayrollManagement extends JFrame {
         partDescriptionField = new JTextField(15);
         inputPanel.add(partDescriptionField);
 
-
         pricePerItemLabel = new JLabel("Price Per Unit:");
         inputPanel.add(pricePerItemLabel);
         pricePerItemField = new JTextField(15);
         inputPanel.add(pricePerItemField);
 
-
         quantityLabel = new JLabel("Quantity:");
         inputPanel.add(quantityLabel);
         quantityField = new JTextField(15);
+        // Apply WholeNumbersFilter to ensure only whole numbers are entered
         ((AbstractDocument) quantityField.getDocument()).setDocumentFilter(new WholeNumbersFilter());
         inputPanel.add(quantityField);
 
-        inputPanel.add(new JLabel(""));
+        inputPanel.add(new JLabel("")); // Empty labels for spacing
         inputPanel.add(new JLabel(""));
 
         paymentLabel = new JLabel("Total:");
@@ -81,20 +94,23 @@ public class PayrollManagement extends JFrame {
         paymentField = new JTextField(15);
         inputPanel.add(paymentField);
 
-        inputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        inputPanel.setBorder(new EmptyBorder(10, 10, 10, 10)); // Add padding
         inputPanel.setBackground(Color.white);
 
         add(inputPanel, BorderLayout.CENTER);
 
+        // Disable editing for description, price, and payment fields
         partDescriptionField.setEditable(false);
         quantityField.setEditable(false);
         pricePerItemField.setEditable(false);
         paymentField.setEditable(false);
 
+        // Button panel setup
         JPanel buttonPanel = new JPanel();
         printButton = new JButton("Print Invoice");
         clearButton = new JButton("Clear Fields");
 
+        // Update part details when a part is selected from the combo box
         itemsComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -102,20 +118,21 @@ public class PayrollManagement extends JFrame {
             }
         });
 
-        printButton.setEnabled(false);
-        clearButton.setEnabled(false);
+        printButton.setEnabled(false); // Initially disabled
+        clearButton.setEnabled(false); // Initially disabled
 
+        // Print invoice button action
         printButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(invoice == null){
+                if (invoice == null) {
                     popUp("Please select an item.");
-                }else{
+                } else {
                     String value = quantityField.getText();
-                    if (value.isEmpty()){
+                    if (value.isEmpty()) {
                         popUp("Please quantity greater than 0.");
-                    }else{
-                        if(invoice != null){
+                    } else {
+                        if (invoice != null) {
                             invoice.writeToFile();
                             popUp("Successfully printed Invoice for payment\n Thank you!");
                             clearInputFields();
@@ -126,6 +143,7 @@ public class PayrollManagement extends JFrame {
             }
         });
 
+        // Clear fields button action
         clearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -134,6 +152,7 @@ public class PayrollManagement extends JFrame {
             }
         });
 
+        // Update payment when quantity field changes
         quantityField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
             public void insertUpdate(javax.swing.event.DocumentEvent e) {
@@ -157,6 +176,10 @@ public class PayrollManagement extends JFrame {
         buttonPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         add(buttonPanel, BorderLayout.SOUTH);
     }
+
+    /**
+     * Clears all input fields and resets the UI.
+     */
     private void clearInputFields() {
         partDescriptionField.setText("");
         quantityField.setText("");
@@ -168,21 +191,24 @@ public class PayrollManagement extends JFrame {
         clearButton.setEnabled(false);
     }
 
+    /**
+     * Updates the payment field when the quantity field changes.
+     */
     private void onQuantityChange() {
         String value = quantityField.getText();
         if (!value.isEmpty()) {
             try {
                 int quantity = Integer.parseInt(value);
-                if(quantity > 0){
+                if (quantity > 0) {
                     String selectedPartNumber = (String) itemsComboBox.getSelectedItem();
                     if (selectedPartNumber != null) {
                         for (PartsListEnum part : PartsListEnum.values()) {
                             if (part.getPart().getPartNumber().equals(selectedPartNumber)) {
-                                invoice = new Invoice(selectedPartNumber, part.getPart().getDescription(),quantity,
-                                        part.getPart().getPrice() );
+                                invoice = new Invoice(selectedPartNumber, part.getPart().getDescription(), quantity,
+                                        part.getPart().getPrice());
                                 paymentField.setText(String.format("%.2f", invoice.getPaymentAmount()));
                                 break;
-                            } else{
+                            } else {
                                 invoice = null;
                                 paymentField.setText("");
                             }
@@ -199,6 +225,9 @@ public class PayrollManagement extends JFrame {
         }
     }
 
+    /**
+     * Updates the part details when a part is selected from the combo box.
+     */
     private void updatePartDetails() {
         String selectedPartNumber = (String) itemsComboBox.getSelectedItem();
         if (selectedPartNumber != null) {
@@ -220,11 +249,12 @@ public class PayrollManagement extends JFrame {
         }
     }
 
-    private void popUp(String message){
+    /**
+     * Displays a pop-up message dialog.
+     *
+     * @param message The message to display.
+     */
+    private void popUp(String message) {
         JOptionPane.showMessageDialog(this, message);
-    }
-
-    private void testAll(){
-
     }
 }
