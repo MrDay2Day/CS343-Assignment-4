@@ -1,0 +1,11 @@
+-------                           Pay Stub                           -----
+Name: JOHN BROWN
+Employee Pay Type: SALARY - COMMISSION
+--
+Base Salary: $230000.00
+Gross Sale: $2307800.43
+Commission Rate: 0.05hrs
+--
+Payment: $345390.02
+Date: 2025-03-26
+-----                           --------                           -----

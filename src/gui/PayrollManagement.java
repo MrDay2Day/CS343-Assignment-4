@@ -2,6 +2,7 @@ package gui;
 
 import classes.Invoice;
 import classes.helpers.NumberFilter;
+import classes.helpers.WholeNumbersFilter;
 import enums.PartsListEnum;
 import enums.StaffType;
 
@@ -60,16 +61,16 @@ public class PayrollManagement extends JFrame {
         inputPanel.add(partDescriptionField);
 
 
-        pricePerItemLabel = new JLabel("Unit:");
+        pricePerItemLabel = new JLabel("Price Per Unit:");
         inputPanel.add(pricePerItemLabel);
         pricePerItemField = new JTextField(15);
-        ((AbstractDocument) pricePerItemField.getDocument()).setDocumentFilter(new NumberFilter());
         inputPanel.add(pricePerItemField);
 
 
-        quantityLabel = new JLabel("Price Per Unit:");
+        quantityLabel = new JLabel("Quantity:");
         inputPanel.add(quantityLabel);
         quantityField = new JTextField(15);
+        ((AbstractDocument) quantityField.getDocument()).setDocumentFilter(new WholeNumbersFilter());
         inputPanel.add(quantityField);
 
         inputPanel.add(new JLabel(""));
@@ -159,6 +160,7 @@ public class PayrollManagement extends JFrame {
     private void clearInputFields() {
         partDescriptionField.setText("");
         quantityField.setText("");
+        quantityField.setEditable(false);
         pricePerItemField.setText("");
         paymentField.setText("");
         pricePerItemField.setEditable(false);
@@ -220,5 +222,9 @@ public class PayrollManagement extends JFrame {
 
     private void popUp(String message){
         JOptionPane.showMessageDialog(this, message);
+    }
+
+    private void testAll(){
+
     }
 }
