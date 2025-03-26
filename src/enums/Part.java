@@ -3,23 +3,23 @@ package enums;
 public class Part {
     private final String partNumber;
     private final String description;
-    private final double pricePerItem;
+    private final double price;
 
-    public Part(String partNumber, String description, double pricePerItem) {
+    public Part(String partNumber, String description, double price) {
         this.partNumber = partNumber;
         this.description = description;
-        this.pricePerItem = pricePerItem;
+        this.price = price;
+    }
+
+    public String getPartNumber() {
+        return partNumber;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public double getPricePerItem() {
-        return pricePerItem;
-    }
-
-    public String getPartNumber() {
-        return partNumber;
+    public double getPrice() {
+        return price;
     }
 }

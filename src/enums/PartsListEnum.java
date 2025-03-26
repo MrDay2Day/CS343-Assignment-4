@@ -1,6 +1,6 @@
 package enums;
 
-public enum PartsNumber {
+public enum PartsListEnum {
     A1(new Part("A000001", "Part 34Ab Fits machine BV34", 34.6)),
     A2(new Part("A000002", "Part 12X Fits machine ZX12", 45.0)),
     A3(new Part("A000003", "Part 89P Fits machine PV89", 29.5)),
@@ -24,7 +24,7 @@ public enum PartsNumber {
 
     private final Part part;
 
-    PartsNumber(Part part) {
+    PartsListEnum(Part part) {
         this.part = part;
     }
 

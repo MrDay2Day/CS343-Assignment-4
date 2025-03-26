@@ -213,11 +213,11 @@ public class StaffManagement extends JFrame {
         addButton.setMinimumSize(new Dimension(120, 30));
         removeButton = new JButton("Remove Employee");
         removeButton.setMinimumSize(new Dimension(120, 30));
-        printButton = new JButton("Print Stubs");
+        printButton = new JButton("Print Pay Stub");
         printButton.setMinimumSize(new Dimension(120, 30));
         clearButton = new JButton("Clear Fields");
         clearButton.setMinimumSize(new Dimension(120, 30));
-        clearTableButton = new JButton("Clear Table");
+        clearTableButton = new JButton("Clear All");
         clearTableButton.setMinimumSize(new Dimension(120, 30));
 
         removeButton.setEnabled(false);

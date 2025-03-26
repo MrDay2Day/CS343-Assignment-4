@@ -39,8 +39,9 @@ public class Invoice implements Payable {
     @Override
     public void writeToFile(){
         try{
-            int invoiceNumber = Integer.parseInt(String.valueOf(System.currentTimeMillis()));
-            String fileName = this.partNumber + "-" + invoiceNumber + " - Invoice";
+            long invoiceNumber = System.currentTimeMillis();
+
+            String fileName = (this.partNumber + "-" + invoiceNumber + "-Invoice").replaceAll("[^a-zA-Z0-9.-]", "_");
             String content = "--" +
                     "-----                            Invoice                            -----\n" +
                     "Invoice Number: " + invoiceNumber + "\n" +
@@ -49,14 +50,14 @@ public class Invoice implements Payable {
                     "Part Description: " + this.partDescription + "\n" +
                     "--\n" +
                     "Price/Unit: $" + String.format("%.2f", this.pricePerItem) + "\n" +
-                    "Quantity: " + String.format("%.2f", this.quantity) + "\n" +
+                    "Quantity: " + this.quantity + "\n" +
                     "--\n" +
                     "Payment: $" + String.format("%.2f", this.getPaymentAmount()) + "\n" +
                     "Date: " + LocalDate.now() + "\n" +
                     "-----                            _______                            -----\n";
             PrintOut.toFile(content, fileName);
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 }
